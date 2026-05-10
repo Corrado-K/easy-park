@@ -1,4 +1,4 @@
-from Vehicle import Vehicle, Car, Truck, Motorcycle, Bus, ElectricCar, ElectricBike
+from Vehicle import Vehicle, Car, Motorcycle, ElectricCar, ElectricBike
 
 
 class VehicleFactory:
@@ -6,9 +6,7 @@ class VehicleFactory:
 
     vehicle_map = {
         "car": Car,
-        "truck": Truck,
         "motorcycle": Motorcycle,
-        "bus": Bus,
         "electric_car": ElectricCar,
         "electric_bike": ElectricBike,
     }

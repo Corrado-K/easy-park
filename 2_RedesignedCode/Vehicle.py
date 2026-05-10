@@ -38,23 +38,11 @@ class Car(Vehicle):
     def get_type(self) -> str:
         return "Car"
 
-class Truck(Vehicle):
-    """Represents a truck."""
-
-    def get_type(self) -> str:
-        return "Truck"
-
 class Motorcycle(Vehicle):
     """Represents a motorcycle."""
 
     def get_type(self) -> str:
         return "Motorcycle"
-
-class Bus(Vehicle):
-    """Represents a bus."""
-
-    def get_type(self) -> str:
-        return "Bus"
         
 class ElectricVehicle(Vehicle):
     """

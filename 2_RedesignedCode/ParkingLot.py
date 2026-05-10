@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Iterator
 
 from SearchStrategy import SearchStrategy
 from Vehicle import ElectricVehicle, Vehicle
@@ -47,22 +48,17 @@ class ParkingLot:
 
     def find_slots(self, strategy: SearchStrategy) -> list[SearchResult]:
         """Return every occupied slot whose vehicle matches the strategy."""
-        results: list[SearchResult] = []
-        for i, vehicle in enumerate(self._regular_slots):
-            if vehicle is not None and strategy.matches(vehicle):
-                results.append(SearchResult(i + 1, False, vehicle))
-        for i, vehicle in enumerate(self._ev_slots):
-            if vehicle is not None and strategy.matches(vehicle):
-                results.append(SearchResult(i + 1, True, vehicle))
-        return results
+        return [r for r in self._iter_occupied_slots() if strategy.matches(r.vehicle)]
 
     def occupied_slots(self) -> list[SearchResult]:
-        """All occupied slots (used for status/charge displays)."""
-        results: list[SearchResult] = []
+        """All occupied slots (used for status / charge displays)."""
+        return list(self._iter_occupied_slots())
+
+    def _iter_occupied_slots(self) -> Iterator[SearchResult]:
+        """Internal helper: yield every occupied slot once, regular then EV."""
         for i, vehicle in enumerate(self._regular_slots):
             if vehicle is not None:
-                results.append(SearchResult(i + 1, False, vehicle))
+                yield SearchResult(i + 1, False, vehicle)
         for i, vehicle in enumerate(self._ev_slots):
             if vehicle is not None:
-                results.append(SearchResult(i + 1, True, vehicle))
-        return results
+                yield SearchResult(i + 1, True, vehicle)

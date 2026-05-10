@@ -57,9 +57,17 @@ class ParkingLotController:
             self._view.show("Registration # is required.\n")
             return
         vehicle_type = self._vehicle_type_for(form["is_ev"], form["is_motor"])
-        vehicle = VehicleFactory.create_vehicle(
-            vehicle_type, form["regnum"], form["make"], form["model"], form["color"]
-        )
+        try:
+            vehicle = VehicleFactory.create_vehicle(
+                vehicle_type,
+                form["regnum"],
+                form["make"],
+                form["model"],
+                form["color"],
+            )
+        except ValueError as e:
+            self._view.show(f"Could not create vehicle: {e}\n")
+            return
         slot = self._lot.park(vehicle)
         if slot is None:
             self._view.show("Sorry, parking lot is full.\n")
@@ -89,7 +97,8 @@ class ParkingLotController:
             self._view.show("Not found.\n")
             return
         for r in results:
-            self._view.show(f"Identified slot: {r.slot_id} ({'EV' if r.is_ev else 'regular'})\n")
+            section = "EV" if r.is_ev else "regular"
+            self._view.show(f"Identified slot: {r.slot_id} ({section})\n")
 
     def _handle_find_by_color(self) -> None:
         if not self._require_lot():
@@ -107,21 +116,31 @@ class ParkingLotController:
     def _handle_status(self) -> None:
         if not self._require_lot():
             return
-        self._view.show("Vehicles\nSlot\tEV?\tReg No.\tColor\tMake\tModel\n")
+        self._view.show(
+            "Vehicles\nSlot\tFloor\tEV?\tReg No.\tColor\tMake\tModel\n"
+        )
         for r in self._lot.occupied_slots():
             v = r.vehicle
             self._view.show(
-                f"{r.slot_id}\t{'Y' if r.is_ev else 'N'}\t"
+                f"{r.slot_id}\t{self._lot.level}\t{'Y' if r.is_ev else 'N'}\t"
                 f"{v.regnum}\t{v.color}\t{v.make}\t{v.model}\n"
             )
 
     def _handle_charge_status(self) -> None:
         if not self._require_lot():
             return
-        self._view.show("EV Charge Levels\nSlot\tReg No.\tCharge %\n")
-        for r in self._lot.occupied_slots():
-            if isinstance(r.vehicle, ElectricVehicle):
-                self._view.show(f"{r.slot_id}\t{r.vehicle.regnum}\t{r.vehicle.charge}\n")
+        ev_results = [
+            r for r in self._lot.occupied_slots()
+            if isinstance(r.vehicle, ElectricVehicle)
+        ]
+        if not ev_results:
+            self._view.show("No electric vehicles parked.\n")
+            return
+        self._view.show("EV Charge Levels\nSlot\tFloor\tReg No.\tCharge %\n")
+        for r in ev_results:
+            self._view.show(
+                f"{r.slot_id}\t{self._lot.level}\t{r.vehicle.regnum}\t{r.vehicle.charge}\n"
+            )
 
     # --- Small helpers ---
 
